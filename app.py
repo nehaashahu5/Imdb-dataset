@@ -1,37 +1,30 @@
 import streamlit as st
-import requests
 import pdfplumber
-from io import BytesIO
 
-st.title("IMDB PDF Dataset Reader")
+st.title("IMDB Dataset – Direct Output")
 
-# 🔴 YAHAN apni GitHub wali PDF ka RAW link paste karo
-PDF_URL = "https://raw.githubusercontent.com/USERNAME/REPO_NAME/BRANCH/Imdb%20dataset.pdf"
+PDF_PATH = "/mnt/data/Imdb dataset.pdf"
 
 
 @st.cache_data
-def load_pdf_from_github(url):
-    response = requests.get(url)
-    response.raise_for_status()
-
-    pdf_file = BytesIO(response.content)
-
-    all_text = ""
-    with pdfplumber.open(pdf_file) as pdf:
+def read_pdf(path):
+    text = ""
+    with pdfplumber.open(path) as pdf:
         for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                all_text += text + "\n"
-
-    return all_text
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+    return text
 
 
 try:
-    text = load_pdf_from_github(PDF_URL)
+    data = read_pdf(PDF_PATH)
 
-    st.subheader("PDF Content (Preview)")
-    st.text_area("Dataset Text", text, height=400)
+    st.subheader("Direct Output from PDF (Synthetic view / preview)")
+    st.text_area("Dataset Text", data[:5000], height=400)
+
+    st.success("PDF directly app.py se read ho gayi.")
 
 except Exception as e:
-    st.error("PDF load nahi ho pa rahi. Raw link check karo.")
+    st.error("PDF read nahi ho pa rahi.")
     st.write(e)
